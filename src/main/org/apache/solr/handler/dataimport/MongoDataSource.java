@@ -2,6 +2,7 @@ package org.apache.solr.handler.dataimport;
 
 
 import com.mongodb.*;
+import org.bson.types.ObjectId;
 
 import com.mongodb.util.JSON;
 import org.slf4j.Logger;
@@ -76,7 +77,23 @@ public class MongoDataSource extends DataSource<Iterator<Map<String, Object>>> {
     @Override
     public Iterator<Map<String, Object>> getData(String query) {
 
-        DBObject queryObject = (DBObject) JSON.parse(query);
+        /* If querying by _id, since the id is a string now, 
+         * it has to be converted back to type ObjectId() using the 
+         * constructor 
+         */ 
+    	
+    	DBObject queryObject = null;
+        if(query.contains("_id")){
+            @SuppressWarnings("unchecked")
+            Map<String, String> queryWithId = (Map<String, String>) JSON.parse(query);
+            String id = queryWithId.get("_id");
+            queryObject = new BasicDBObject("_id", new ObjectId(id));
+        }
+        else{
+            queryObject = (DBObject) JSON.parse(query);
+        }
+        
+//        DBObject queryObject = (DBObject) JSON.parse(query);
         LOG.debug("Executing MongoQuery: " + query.toString());
 
         long start = System.currentTimeMillis();
