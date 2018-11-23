@@ -2,6 +2,7 @@ package org.apache.solr.handler.dataimport;
 
 
 import com.mongodb.*;
+
 import com.mongodb.util.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,7 @@ public class MongoDataSource extends DataSource<Iterator<Map<String, Object>>> {
 
     private static final Logger LOG = LoggerFactory.getLogger(TemplateTransformer.class);
 
-    private DBCollection mongoCollection;
+	private DBCollection mongoCollection;
     private DB mongoDb;
     private Mongo mongoConnection;
 
@@ -47,12 +48,18 @@ public class MongoDataSource extends DataSource<Iterator<Map<String, Object>>> {
         }
 
         try {
-            Mongo mongo = new Mongo(host, Integer.parseInt(port));
+        	LOG.info("Virtuo Tech is connecting");
+        	MongoClientOptions clientOptions = new MongoClientOptions.Builder().socketKeepAlive(true).build();
+        	LOG.info("Keep socket alive has been enabled");
+        	MongoClient client  = new MongoClient(host, clientOptions);
+        	this.mongoDb = client.getDB(databaseName);
+        	
+            /*Mongo mongo = new Mongo(host, Integer.parseInt(port));
             mongo.setReadPreference(ReadPreference.secondaryPreferred());
 
             this.mongoConnection = mongo;
             this.mongoDb = mongo.getDB(databaseName);
-
+*/
             if (username != null) {
                 if (this.mongoDb.authenticate(username, password.toCharArray()) == false) {
                     throw new DataImportHandlerException(SEVERE
